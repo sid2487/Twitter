@@ -1,0 +1,39 @@
+# ========================
+# Root .gitignore for twitter project
+# ========================
+
+# Ignore node_modules and environment files in both frontend and backend
+twitter-backend/node_modules/
+twitter-frontend/node_modules/
+twitter-backend/.env
+twitter-frontend/.env
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS/Editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Build outputs
+dist/
+build/
+
+# Optional coverage/test output
+coverage/
+*.lcov
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Ignore uploads folder if any local media is stored temporarily
+twitter-backend/uploads/
