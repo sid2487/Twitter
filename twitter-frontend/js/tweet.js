@@ -5,20 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const tweetForm = document.getElementById("tweetForm");
     const tweetsContainer = document.getElementById("tweets");
 
-    fetch(`${API}/tweet`)
-    .then(res => res.json())
-    .then(data => {
-        console.log("API Response:", data); // see the structure of api
-        data.tweets.reverse().forEach(tweet => {
-            const div = document.createElement("div");
-            div.className = "tweet-card";
-            div.innerHTML = `
-            <p><strong>@${tweet.user.username}</strong>: ${tweet.content}</p>
-            ${tweet.media ? `<img src="${tweet.media}" />` : ""}
-            `;
-            tweetsContainer.appendChild(div);
-        });
-    });
+    // load tweets when dom is ready
+    loadTweets();
 
 
     tweetForm.addEventListener("submit", async (e) => {
@@ -83,4 +71,100 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 2000);
         }
     });
+
+    async function toggleLike(tweetId) {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API}/tweet/${tweetId}/like`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            },
+        });
+        if(res.ok) loadTweets();
+    };
+
+
+    async function postComment(tweetId, text) {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API}/tweet/${tweetId}/comment`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ text }),
+        });
+        if(res.ok) loadTweets();
+    };
+
+    async function loadTweets() {
+        tweetsContainer.innerHTML = ""; 
+
+        try {
+            const res = await fetch(`${API}/tweet`);
+            const data = await res.json();
+            console.log("Api response:", data);
+
+            data.tweets.reverse().forEach(tweet => {
+                const div = document.createElement("div");
+                div.className = "tweet-card";
+                // tweet content
+                div.innerHTML = `
+                    <p><strong>@${tweet.user.username}</strong>: ${tweet.content}</p>
+                    ${tweet.media ? `<img src="${tweet.media}" />` : ""}
+                `;
+
+                // like buttton
+                const likeBtn = document.createElement("button");
+                likeBtn.className = "like-button";
+                likeBtn.innerText = `❤️ Like (${tweet.likes.length})`;
+                likeBtn.addEventListener("click", () => toggleLike(tweet._id));
+
+                // comment display
+                const commentSection = document.createElement("div");
+                commentSection.className = "comment-section";
+
+                if(tweet.comments && tweet.comments.length > 0) {
+                    tweet.comments.forEach(comment => {
+                        const commentDiv = document.createElement("div");
+                        commentDiv.className = "comment";
+                        commentDiv.innerHTML = `<strong>@${comment.user.username}</strong>: ${comment.text}`;
+                        commentSection.appendChild(commentDiv);
+                    });
+                } else {
+                    const noComment = document.createElement("p");
+                    noComment.className = "no-comment";
+                    noComment.innerText = "No comments yet.";
+                    commentSection.appendChild(noComment);
+                }
+
+                // comment Form
+                const commentForm = document.createElement("form");
+                commentForm.className = "comment-form";
+                commentForm.innerHTML = `
+                <input type="text" placeholder="write a comment...." class="comment-input" required />
+                <button type="submit">Comment</button>
+                `;
+
+                commentForm.addEventListener("submit", (e) => {
+                    e.preventDefault();
+                    const input = commentForm.querySelector(".comment-input");
+                    const commentText = input.value.trim();
+                    if(commentText) {
+                        postComment(tweet._id, commentText);
+                        input.value = "";
+                    }
+                });
+
+                div.appendChild(likeBtn);
+                div.appendChild(commentSection);
+                div.appendChild(commentForm);
+
+
+                tweetsContainer.appendChild(div);
+            });
+        } catch (error) {
+            console.error("Failed to load tweets", error);
+        }
+    }
 });
