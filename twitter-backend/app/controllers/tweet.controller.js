@@ -112,3 +112,19 @@ export const getComments = async (req, res) => {
     .sort({ createdAt: -1 });
     res.status(200).json({ comments });
 }
+
+// delete
+export const deleteTweet = async (req, res) => {
+    const tweetId = req.params.id;
+    const userId = req.user._id;
+
+    const tweet = await Tweet.findById(tweetId);
+    if(!tweet) return res.status(404).json({ message: "Tweet not found" });
+
+    if(tweet.user.toString() !== userId.toString()){
+        return res.status(403).json({ message: "Unauthorized to delete this tweet" });
+    }
+
+    await tweet.deleteOne();
+    res.status(200).json({ message: "Tweet deleted successfully" });
+};

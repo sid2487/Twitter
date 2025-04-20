@@ -14,7 +14,10 @@ export const register = async (req, res) => {
 
         res.status(201).json({
             token: generateToken(user._id),
-            username: user.username,
+            user: {
+                _id: user._id,
+                username: user.username,
+            }
         });
     } catch (err) {
         next(err);
@@ -27,11 +30,13 @@ export const login = async (req, res) => {
         const user = await User.findOne({ username });
 
         if (user && (await bcrypt.compare(password, user.password))) {
-            res.json({
+            res.status(200).json({
                 message: "Login Successful",
                 token: generateToken(user._id),
-                username: user.username,
-                id: user._id
+                user: {
+                    _id: user._id,
+                    username: user.username,
+                }
             });
         } else {
             res.status(401).json({ message: "Invalid credentials" });

@@ -97,6 +97,21 @@ document.addEventListener("DOMContentLoaded", () => {
         if(res.ok) loadTweets();
     };
 
+    async function deleteTweet(tweetId){
+        const confirmed = window.confirm("Are you sure you want to delete this tweet?");
+        if(!confirmed) return;
+
+        const token = localStorage.getItem("token");
+
+        const res = await fetch(`${API}/tweet/${tweetId}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+            }
+        }); 
+        if(res.ok) loadTweets();
+    }
+
     async function loadTweets() {
         tweetsContainer.innerHTML = ""; 
 
@@ -113,6 +128,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     <p><strong>@${tweet.user.username}</strong>: ${tweet.content}</p>
                     ${tweet.media ? `<img src="${tweet.media}" />` : ""}
                 `;
+
+                // delete button(for user own the tweet)
+                const loggedInUser = JSON.parse(localStorage.getItem("user"));
+                if(loggedInUser && loggedInUser._id === tweet.user._id) {
+                    const deleteBtn = document.createElement("button");
+                    deleteBtn.className = "delte-btn";
+                    deleteBtn.innerText = "Delete";
+                    deleteBtn.addEventListener("click", () => deleteTweet(tweet._id));
+                    div.appendChild(deleteBtn);
+                }
 
                 // like buttton
                 const likeBtn = document.createElement("button");

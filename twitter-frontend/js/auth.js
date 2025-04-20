@@ -47,9 +47,10 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const data = await res.json();
-            if(data.token){
+            if(data.token && data.user && data.user.username){
                 localStorage.setItem("token", data.token);
-                localStorage.setItem("username", username); // store the username
+                localStorage.setItem("user", JSON.stringify(data.user));
+                // localStorage.setItem("username", data.user.username); // store the username
                 window.location.href = "index.html";
             }
         });
@@ -60,20 +61,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const logoutBtn = document.getElementById("logoutBtn");
 
     if(welcomeText) {
-        const username = localStorage.getItem("username");
+        // const username = localStorage.getItem("username");
         const token = localStorage.getItem("token");
+        const userString = localStorage.getItem("user");
 
-        if(!token || !username) {
+        if (!token || !userString) {
             window.location.href = "login.html";
         } else {
-            welcomeText.innerText = `Welcome, ${username}`;
+            try {
+                const user = JSON.parse(userString);
+                welcomeText.innerText = `Welcome, ${user.username}`;
+            } catch (err) {
+                console.error("Error parsing user from localStorage:", err);
+                window.location.href = "login.html";
+            }
         }
     }
 
     if(logoutBtn) {
         logoutBtn.addEventListener("click", () => {
             localStorage.removeItem("token");
-            localStorage.removeItem("username");
+            localStorage.removeItem("user");
             window.location.href = "login.html";
         })
     }

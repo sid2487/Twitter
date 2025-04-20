@@ -1,5 +1,5 @@
 import express from "express";
-import { commentTweet, createTweet, getComments, getLikes, getTweets, likeTweet } from "../controllers/tweet.controller.js";
+import { commentTweet, createTweet, deleteTweet, getComments, getLikes, getTweets, likeTweet } from "../controllers/tweet.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
 import { Upload } from "../middleware/mutler.middleware.js";
 
@@ -13,5 +13,7 @@ router.get("/:id/likes", getLikes);
 
 router.post("/:id/comment", protect, commentTweet);
 router.get("/:id/comments", getComments);
+
+router.delete("/:id", protect, deleteTweet);
 
 export default router;
